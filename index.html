@@ -40,6 +40,14 @@ linear-gradient(160deg,#0b0714,#05040a);overflow:hidden;font-family:-apple-syste
 .icon .ic{font-size:30px;filter:drop-shadow(0 3px 6px #0007)}
 .icon .lb{font-size:10.5px;color:#eee;text-align:center;text-shadow:0 1px 3px #000;line-height:1.2}
 
+.desktop-cd{position:absolute;top:300px;left:8px;right:8px;z-index:2;text-align:center}
+.desktop-cd .dc-title{font-size:13.5px;color:#ffd28a;margin-bottom:12px;letter-spacing:.5px;text-shadow:0 2px 6px #000}
+.dc-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.dc-row div{background:#1c1420d0;border:1px solid #ffb15c55;border-radius:16px;padding:14px 14px;min-width:64px;box-shadow:0 10px 26px #0007;backdrop-filter:blur(6px)}
+.dc-row b{display:block;font-size:30px;color:#ffd28a;font-family:'JetBrains Mono',monospace;line-height:1.1}
+.dc-row span{font-size:10.5px;color:#d9c4b0;letter-spacing:.5px}
+@media (min-width:420px){.dc-row div{min-width:78px;padding:16px 18px}.dc-row b{font-size:36px}}
+
 #taskbar{position:absolute;left:0;right:0;bottom:0;height:52px;background:#0d0a14ee;backdrop-filter:blur(10px);border-top:1px solid #ffffff22;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:5}
 #startbtn{display:flex;align-items:center;gap:6px;background:#ffffff14;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;color:#fff}
 #clock{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#ddd}
@@ -141,6 +149,16 @@ input{width:100%;padding:12px;border-radius:10px;border:1px solid #ffb15c40;back
 <div class="icon" onclick="openApp('locked')"><div class="ic">🔒</div><div class="lb">Maxfiy</div></div>
 </div>
 
+<div class="desktop-cd" id="desktop-cd">
+<div class="dc-title">🎂 Tug‘ilgan kunga qolgan vaqt</div>
+<div class="dc-row">
+<div><b id="dcd-d">0</b><span>kun</span></div>
+<div><b id="dcd-h">00</b><span>soat</span></div>
+<div><b id="dcd-m">00</b><span>daqiqa</span></div>
+<div><b id="dcd-s">00</b><span>soniya</span></div>
+</div>
+</div>
+
 <div id="winlayer"></div>
 
 <div id="startmenu" class="hidden">
@@ -192,6 +210,23 @@ function unlockDesktop(){
   document.getElementById('boot').style.display='none';
   document.getElementById('desktop').classList.remove('hidden');
   startClock();
+  startDesktopCountdown();
+}
+
+function startDesktopCountdown(){
+  const target=new Date('2026-09-06T00:00:00');
+  function tick(){
+    let diff=target-new Date();
+    if(diff<0)diff=0;
+    const d=Math.floor(diff/86400000),h=Math.floor(diff%86400000/3600000),m=Math.floor(diff%3600000/60000),s=Math.floor(diff%60000/1000);
+    document.getElementById('dcd-s').textContent=String(s).padStart(2,'0');
+    document.getElementById('dcd-m').textContent=String(m).padStart(2,'0');
+    document.getElementById('dcd-h').textContent=String(h).padStart(2,'0');
+    document.getElementById('dcd-d').textContent=d;
+    if(diff<=0)document.getElementById('desktop-cd').querySelector('.dc-title').textContent='🎉 Bugun sening kuning!';
+  }
+  tick();
+  setInterval(tick,1000);
 }
 
 /* ===== CLOCK ===== */
