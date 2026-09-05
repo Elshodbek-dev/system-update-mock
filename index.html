@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Tizim yangilanmoqda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;font-family:-apple-system,Segoe UI,Arial,sans-serif}
+body{overflow:hidden;background:#000;color:#fff}
+
+/* ===== BOOT / FAKE UPDATE SCREEN ===== */
+#boot{position:fixed;inset:0;z-index:999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;padding:20px}
+#boot .blogo{width:64px;height:64px;border:5px solid #333;border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#boot h3{font-weight:400;font-size:16px;color:#ddd;margin:0}
+#boot .bpct{font-size:13px;color:#888;font-family:'JetBrains Mono',monospace}
+#boot .bbar{width:min(260px,70vw);height:4px;background:#222;border-radius:4px;overflow:hidden}
+#boot .bbar i{display:block;height:100%;width:0%;background:#fff;transition:width .2s linear}
+#boot .bnote{font-size:11.5px;color:#555;max-width:280px}
+#boot .gear{margin-top:10px;font-size:26px;opacity:.3;cursor:pointer;user-select:none;transition:opacity .2s ease}
+#boot .gear.show{opacity:.85;animation:spin2 3s linear infinite}
+@keyframes spin2{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+
+/* ===== DESKTOP OS ===== */
+#desktop{position:fixed;inset:0;background:
+radial-gradient(circle at 15% 15%,#241035 0,transparent 35%),
+radial-gradient(circle at 85% 80%,#1a2340 0,transparent 40%),
+linear-gradient(160deg,#0b0714,#05040a);overflow:hidden;font-family:-apple-system,Segoe UI,Arial,sans-serif}
+.ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.ambient span{position:absolute;bottom:-40px;font-size:16px;opacity:.25;animation:drift linear infinite}
+@keyframes drift{to{transform:translateY(-115vh) translateX(15px) rotate(15deg);opacity:0}}
+
+.icons{position:absolute;top:14px;left:10px;right:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px 6px;z-index:2}
+.icon{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:8px 2px;border-radius:10px;transition:background .15s ease}
+.icon:active{background:#ffffff22}
+.icon .ic{font-size:30px;filter:drop-shadow(0 3px 6px #0007)}
+.icon .lb{font-size:10.5px;color:#eee;text-align:center;text-shadow:0 1px 3px #000;line-height:1.2}
+
+#taskbar{position:absolute;left:0;right:0;bottom:0;height:52px;background:#0d0a14ee;backdrop-filter:blur(10px);border-top:1px solid #ffffff22;display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:5}
+#startbtn{display:flex;align-items:center;gap:6px;background:#ffffff14;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;color:#fff}
+#clock{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#ddd}
+
+#startmenu{position:absolute;left:8px;bottom:60px;width:min(240px,72vw);background:#150f1fee;border:1px solid #ffffff22;border-radius:14px;padding:8px;backdrop-filter:blur(12px);z-index:6}
+#startmenu .smitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13.5px;cursor:pointer}
+#startmenu .smitem:active{background:#ffffff18}
+
+#winlayer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:10;pointer-events:none}
+.window{pointer-events:auto}
+.window{width:min(420px,100%);max-height:88vh;display:flex;flex-direction:column;background:#120d18f0;border:1px solid #ffffff22;border-radius:16px;box-shadow:0 30px 80px #000a;overflow:hidden;animation:winIn .28s cubic-bezier(.2,.8,.3,1)}
+@keyframes winIn{from{opacity:0;transform:scale(.92) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.wintitle{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#1c1526;border-bottom:1px solid #ffffff18;font-size:13px;color:#eee}
+.wintitle .wt-left{display:flex;align-items:center;gap:8px}
+.wintitle .wx{width:24px;height:24px;border-radius:50%;background:#ffffff14;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px}
+.wincontent{padding:20px 18px;overflow-y:auto;text-align:center}
+.wincontent h2{color:#ffcf9e;font-size:19px;margin:4px 0 10px}
+.wincontent p{line-height:1.7;font-size:15px;color:#e8e0ec}
+.small{color:#b9aec2;font-size:13px}
+button{border:0;border-radius:12px;padding:12px 18px;margin:6px 4px;background:linear-gradient(135deg,#ff8a3d,#c93fae);color:#fff;font-size:14.5px;cursor:pointer;box-shadow:0 6px 18px #ff6b3d40}
+button:disabled{opacity:.35}
+.choices button{display:block;width:100%;margin:6px 0;background:#1c1420;border:1px solid #ffb15c40;text-align:left}
+
+.countdown{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.countdown div{background:#1c1420;border:1px solid #ffb15c40;border-radius:10px;padding:10px 12px;min-width:56px}
+.countdown b{display:block;font-size:20px;color:#ffd28a}.countdown span{font-size:10px;color:#b9aec2}
+
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:12px 0}
+.photo-slot{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid #ffb15c40;background:#1c1420}
+.photo-slot img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:4px;color:#b9aec2;font-size:22px;text-align:center}
+.ph small{font-size:10px;color:#8a7f92}
+
+.candles{display:flex;justify-content:center;gap:12px;margin:16px 0}
+.candle{font-size:36px;cursor:pointer;transition:transform .15s ease,opacity .4s ease}
+.candle.out{opacity:.25;filter:grayscale(1)}
+.cakebig{font-size:70px}
+
+.promise-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#1c1420;border:1px solid #ffb15c40;border-radius:10px;padding:10px 12px;margin:6px 0;text-align:left}
+.promise-item span{flex:1;font-size:13.5px}
+.promise-item button{margin:0;padding:7px 10px;font-size:12.5px;white-space:nowrap}
+.promise-item.done{border-color:#ffd28a;background:#241a18}
+
+.logline{font-family:'JetBrains Mono',monospace;font-size:12px;text-align:left;color:#9ee6a8;background:#0a1a0d;border-radius:8px;padding:8px 10px;margin:5px 0}
+.logline b{color:#6fe08a}
+
+.certcard{background:radial-gradient(circle at 30% 20%,#fffaf0,#f0e2c0 70%)!important;color:#3b2b18;position:relative}
+.cert-inner{position:relative;padding:40px 20px 30px;border:2px solid #c69a53;border-radius:6px;background:
+repeating-linear-gradient(135deg,#fffaf0 0 2px,#fdf3dd 2px 4px);
+box-shadow:inset 0 0 0 5px #fffaf0,inset 0 0 0 7px #c69a53aa;overflow:visible}
+.cert-ribbon{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8a1f3d,#5c1228);color:#fdeccf;font-family:'Playfair Display',serif;font-weight:700;font-size:9.5px;letter-spacing:3px;padding:6px 18px;border-radius:3px;box-shadow:0 5px 12px #0005;white-space:nowrap}
+.cert-corner-diamond{position:absolute;width:8px;height:8px;background:#c69a53;transform:rotate(45deg)}
+.corner{position:absolute;font-size:20px;color:#c69a53}
+.corner.tl{top:14px;left:8px}.corner.tr{top:14px;right:8px;transform:scaleX(-1)}
+.corner.bl{bottom:8px;left:8px;transform:scaleY(-1)}.corner.br{bottom:8px;right:8px;transform:scale(-1,-1)}
+.cert-laurel{font-size:15px;margin:16px 0 2px;color:#8a6a30}
+.cert-title{font-family:'Playfair Display',serif;font-weight:800;font-size:16.5px;color:#6b3f14;letter-spacing:1px;vertical-align:middle}
+.cert-flourish{color:#c69a53;font-size:11px;letter-spacing:5px;margin:6px 0 10px}
+.cert-names{font-family:'Great Vibes',cursive;font-size:40px;line-height:1.15;margin:4px 0 8px;color:#7a1f3d;text-shadow:0 1px 1px #ffffffcc}
+.cert-body{font-family:'Playfair Display',serif;font-size:12.5px;line-height:1.85;color:#4a3820;margin:8px 4px}
+.cert-seal{width:58px;height:58px;border-radius:50%;margin:14px auto 6px;display:flex;align-items:center;justify-content:center;font-size:24px;background:radial-gradient(circle at 35% 30%,#ffcf7a,#b5790f 75%);box-shadow:0 5px 14px #0006,0 0 0 3px #fffaf0,0 0 0 5px #c69a53;transform:rotate(-6deg)}
+.cert-id{font-family:'Playfair Display',serif;font-size:9px;color:#a08a5e;margin-top:14px;letter-spacing:.5px}
+.cert-sign{position:absolute;bottom:6px;right:12px;font-family:'Great Vibes',cursive;font-style:italic;font-size:11px;color:#c69a53;opacity:.6;transform:rotate(-5deg)}
+
+.fall{position:fixed;top:-30px;font-size:20px;animation:fall linear forwards;pointer-events:none;z-index:50}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:0}}
+.balloon{position:fixed;bottom:-80px;font-size:40px;animation:rise linear forwards;pointer-events:none;z-index:50}
+@keyframes rise{to{transform:translateY(-120vh) translateX(25px);opacity:0}}
+.fadeLines p{opacity:0;transition:opacity .9s ease;font-size:15.5px;margin:8px 0}
+.fadeLines p.show{opacity:1}
+.err{color:#ff8f8f;font-size:12.5px;min-height:18px}
+input{width:100%;padding:12px;border-radius:10px;border:1px solid #ffb15c40;background:#1c1420;color:#fff;font-size:14px;margin:8px 0}
+</style>
+</head>
+<body>
+
+<!-- ===== FAKE SYSTEM UPDATE (disguise) ===== -->
+<div id="boot">
+<div class="blogo"></div>
+<h3 id="boot-text">Tizim yangilanmoqda...</h3>
+<div class="bbar"><i id="boot-bar"></i></div>
+<div class="bpct" id="boot-pct">0%</div>
+<div class="bnote">Qurilmani o‘chirmang yoki qayta ishga tushirmang.</div>
+<div class="gear" id="boot-gear" onclick="tapGear()">⚙️</div>
+</div>
+
+<!-- ===== DESKTOP ===== -->
+<div id="desktop" class="hidden">
+<div class="ambient" id="ambient"></div>
+
+<div class="icons">
+<div class="icon" onclick="openApp('gallery')"><div class="ic">🖼️</div><div class="lb">Rasmlar</div></div>
+<div class="icon" onclick="openApp('cake')"><div class="ic">🎂</div><div class="lb">Tort.exe</div></div>
+<div class="icon" onclick="openApp('letter')"><div class="ic">💌</div><div class="lb">Xat.txt</div></div>
+<div class="icon" onclick="openApp('timeline')"><div class="ic">🗓️</div><div class="lb">Kundalik.log</div></div>
+<div class="icon" onclick="openApp('wishes')"><div class="ic">🌠</div><div class="lb">Tilaklar</div></div>
+<div class="icon" onclick="openApp('cert')"><div class="ic">📜</div><div class="lb">Sertifikat</div></div>
+<div class="icon" onclick="openApp('song')"><div class="ic">🎵</div><div class="lb">Qoshiq.mp3</div></div>
+<div class="icon" onclick="openApp('locked')"><div class="ic">🔒</div><div class="lb">Maxfiy</div></div>
+</div>
+
+<div id="winlayer"></div>
+
+<div id="startmenu" class="hidden">
+<div class="smitem" onclick="openApp('gallery');closeStart()">🖼️ Rasmlar</div>
+<div class="smitem" onclick="openApp('cake');closeStart()">🎂 Tort.exe</div>
+<div class="smitem" onclick="openApp('letter');closeStart()">💌 Xat.txt</div>
+<div class="smitem" onclick="openApp('timeline');closeStart()">🗓️ Kundalik.log</div>
+<div class="smitem" onclick="openApp('wishes');closeStart()">🌠 Tilaklar</div>
+<div class="smitem" onclick="openApp('cert');closeStart()">📜 Sertifikat</div>
+<div class="smitem" onclick="openApp('song');closeStart()">🎵 Qoshiq.mp3</div>
+<div class="smitem" onclick="openApp('finale');closeStart()">🎉 Surprise.exe</div>
+<div class="smitem" onclick="openApp('locked');closeStart()">🔒 Maxfiy</div>
+</div>
+
+<div id="taskbar">
+<div id="startbtn" onclick="toggleStart()">🎂</div>
+<div id="clock">00:00</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+/* ===== BOOT SEQUENCE ===== */
+let bootPct=0;
+const bootMsgs=['Tizim yangilanmoqda...','Fayllar tekshirilmoqda...','Komponentlar sozlanmoqda...','Xavfsizlik tekshiruvi...'];
+const bootBar=document.getElementById('boot-bar'),bootPctEl=document.getElementById('boot-pct'),bootText=document.getElementById('boot-text');
+const bootIv=setInterval(()=>{
+  bootPct+=Math.random()*7+2;
+  if(bootPct>=100){
+    bootPct=100;
+    clearInterval(bootIv);
+    document.getElementById('boot-gear').classList.add('show');
+    bootText.textContent='Qo‘shimcha tasdiqlash talab qilinadi';
+  }
+  bootBar.style.width=bootPct+'%';
+  bootPctEl.textContent=Math.floor(bootPct)+'%';
+  if(bootPct<100)bootText.textContent=bootMsgs[Math.floor(bootPct/26)]||bootMsgs[bootMsgs.length-1];
+},260);
+
+let gearTaps=0,gearTimer=null;
+function tapGear(){
+  gearTaps++;
+  clearTimeout(gearTimer);
+  gearTimer=setTimeout(()=>{gearTaps=0},1400);
+  if(gearTaps>=5)unlockDesktop();
+}
+function unlockDesktop(){
+  document.getElementById('boot').style.display='none';
+  document.getElementById('desktop').classList.remove('hidden');
+  startClock();
+}
+
+/* ===== CLOCK ===== */
+function startClock(){
+  function tick(){
+    const d=new Date();
+    const hh=String(d.getHours()).padStart(2,'0'),mm=String(d.getMinutes()).padStart(2,'0');
+    document.getElementById('clock').textContent=hh+':'+mm;
+  }
+  tick();setInterval(tick,10000);
+}
+
+/* ===== START MENU ===== */
+function toggleStart(){document.getElementById('startmenu').classList.toggle('hidden')}
+function closeStart(){document.getElementById('startmenu').classList.add('hidden')}
+
+/* ===== WINDOW SYSTEM ===== */
+function closeApp(){document.getElementById('winlayer').innerHTML=''}
+function renderWindow(title,icon,bodyHTML){
+  document.getElementById('winlayer').innerHTML=
+  '<div class="window"><div class="wintitle"><div class="wt-left"><span>'+icon+'</span><span>'+title+'</span></div><div class="wx" onclick="closeApp()">✕</div></div><div class="wincontent" id="win-body">'+bodyHTML+'</div></div>';
+}
+
+function openApp(id){
+  closeStart();
+  if(id==='gallery')return appGallery();
+  if(id==='cake')return appCake();
+  if(id==='letter')return appLetter();
+  if(id==='timeline')return appTimeline();
+  if(id==='wishes')return appWishes();
+  if(id==='cert')return appCert();
+  if(id==='song')return appSong();
+  if(id==='finale')return appFinale();
+  if(id==='locked')return appLocked();
+}
+
+/* ---- Gallery ---- */
+function appGallery(){
+  let slots='';
+  for(let i=1;i<=36;i++){
+    slots+='<div class="photo-slot"><img src="photo'+i+'.jpg" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div class="ph">🖼️<small>photo'+i+'.jpg</small></div></div>';
+  }
+  renderWindow('Rasmlar','🖼️','<p class="small">Bizning hech qachon unutilmas xotiralarimiz yaxshi va yomon kunlarimiz doim birga bo`ldik va bundan keyin ham birga bo`lamiz!</p><div class="gallery">'+slots+'</div>');
+}
+
+/* ---- Cake ---- */
+function appCake(){
+  renderWindow('Tort.exe','🎂','<div class="cakebig">🎂</div><p>Shamlarga bosib, hammasini o‘chir va  🕯️</p><div class="candles" id="candles"><div class="candle" onclick="blowCandle(this)">🕯️</div><div class="candle" onclick="blowCandle(this)">🕯️</div><div class="candle" onclick="blowCandle(this)">🕯️</div><div class="candle" onclick="blowCandle(this)">🕯️</div><div class="candle" onclick="blowCandle(this)">🕯️</div></div><p class="small" id="cake-msg"></p>');
+}
+function blowCandle(el){
+  el.classList.add('out');
+  const all=document.querySelectorAll('#candles .candle');
+  const out=document.querySelectorAll('#candles .candle.out');
+  if(out.length===all.length){document.getElementById('cake-msg').textContent='Tilaging albatta ushalsin! 🎂✨';burst();}
+}
+
+/* ---- Letter ---- */
+function appLetter(){
+  renderWindow('Xat.txt','💌','<div class="fadeLines" id="letter-lines"><p>Bugun sen uchun juda maxsus bir kun...</p><p>Yana bir yil o‘tdi — va sen har safar yanada ajoyibroq bo‘lib borayapsan.</p><p>Kulishing, mehring, kuching — bularning barchasi meni har kuni ilhomlantiradi.</p><p>Bugun faqat bitta orzuim bor —</p><p><b>seni doim shunday baxtli va tabassumli ko‘rish. 🎂❤️</b></p></div>');
+  setTimeout(()=>{
+    const lines=document.querySelectorAll('#letter-lines p');
+    lines.forEach((p,idx)=>{setTimeout(()=>p.classList.add('show'),700*(idx+1))});
+  },50);
+}
+
+/* ---- Timeline (terminal log style) ---- */
+function appTimeline(){
+  renderWindow('Kundalik.log','🗓️',
+  '<p class="small" style="text-align:left"></p>'+
+  '<div class="logline"><b>Yangi yil boshlandi sen bilan baxtga to`la!</b></div>'+
+  '<div class="logline"><b>Eng iliq kunlar</b> — birga o‘tkazilgan unutilmas lahzalar.</div>'+
+  '<div class="logline"><b>Yangi bosqich</b> — yangi yosh arafasi boshlandi.</div>'+
+  '<div class="logline"><b>Bugun esa eng chiroyli kun</b> — barcha lahzalarning yig‘indisi. 🎉</div>');
+}
+
+/* ---- Wishes ---- */
+function appWishes(){
+  renderWindow('Tilaklar','🌠',
+  '<p>Har birini "🌠 Tilayman" deb belgila.</p>'+
+  '<div id="wishes-list">'+
+  '<div class="promise-item"><span>😊 Doim sog‘lom va baxtli bo‘lishingni</span><button onclick="confirmWish(this)">🌠</button></div>'+
+  '<div class="promise-item"><span>🚀 Barcha orzularing amalga oshishini</span><button onclick="confirmWish(this)">🌠</button></div>'+
+  '<div class="promise-item"><span>🌍 Yangi va qiziqarli sayohatlarni</span><button onclick="confirmWish(this)">🌠</button></div>'+
+  '<div class="promise-item"><span>❤️ Yonimda har doim baxtli bo`lib yurishingni</span><button onclick="confirmWish(this)">🌠</button></div>'+
+  '</div><div id="wishes-final" class="hidden"><p> Abadiy  men sen bilan bo‘laman. Jannat iforligim! 🎂❤️</p></div>');
+}
+function confirmWish(btn){
+  btn.disabled=true;btn.textContent='✓';
+  btn.closest('.promise-item').classList.add('done');
+  const all=document.querySelectorAll('#wishes-list .promise-item');
+  const done=document.querySelectorAll('#wishes-list .promise-item.done');
+  if(done.length===all.length)document.getElementById('wishes-final').classList.remove('hidden');
+}
+
+/* ---- Certificate ---- */
+function appCert(){
+  renderWindow('Sertifikat.pdf','📜',
+  '<div class="certcard" style="border-radius:12px;padding:16px 8px"><div class="cert-inner" id="cert-inner">'+
+  '<div class="cert-ribbon">MAXSUS SERTIFIKAT</div>'+
+  '<span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>'+
+  '<div class="cert-laurel">🌿 <span class="cert-title">TUG‘ILGAN KUN SERTIFIKATI</span> 🌿</div>'+
+  '<p class="cert-body">Ushbu sertifikat shubhasiz tasdiqlaydiki</p>'+
+  '<div class="cert-names">Shabbona</div>'+
+  '<div class="cert-flourish">✦ ✦ ✦</div>'+
+  '<p class="cert-body">yana bir yosh kattaroq, yana bir bor go‘zalroq va baxtliroq bo‘ldi.<br>Bu kun bu sertifikat — faqat unga bag‘ishlanadi. 🎂</p>'+
+  '<div class="cert-seal">🎁</div>'+
+  '<div class="cert-id">Sertifikat № 2310 · 6-sentabr · Har yili nishonlanadi 🎉</div>'+
+  '<div class="cert-sign">Elshod</div>'+
+  '</div></div><button onclick="downloadCertPDF()" id="cert-pdf-btn">📄 PDF yuklab olish</button>');
+}
+function downloadCertPDF(){
+  const node=document.getElementById('cert-inner');
+  const btn=document.getElementById('cert-pdf-btn');
+  const orig=btn.textContent;
+  btn.textContent='⏳...';btn.disabled=true;
+  const run=()=>html2canvas(node,{scale:3,backgroundColor:'#fffaf0',useCORS:true,logging:false}).then(canvas=>{
+    const imgData=canvas.toDataURL('image/png');
+    const { jsPDF }=window.jspdf;
+    const pdf=new jsPDF({orientation:canvas.width>canvas.height?'landscape':'portrait',unit:'px',format:[canvas.width,canvas.height]});
+    pdf.addImage(imgData,'PNG',0,0,canvas.width,canvas.height);
+    pdf.save('Tugilgan_Kun_Sertifikati_Shabbona.pdf');
+    btn.textContent=orig;btn.disabled=false;
+  }).catch(()=>{btn.textContent=orig;btn.disabled=false;alert('Xatolik. Internetni tekshiring.')});
+  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(run)}else{setTimeout(run,300)}
+}
+
+/* ---- Song ---- */
+function appSong(){
+  renderWindow('Qoshiq.mp3','🎵','<video controls playsinline style="width:100%;border-radius:12px;margin-bottom:10px;background:#000" src="tabrik_video.mp4"></video><div style="font-size:44px" id="song-note">🎵</div><button onclick="playSong()" id="song-btn">▶️ Ijro etish</button><div id="song-lyrics" class="fadeLines" style="margin-top:10px"><p>Bugun bayram, bugun bayram, sen uchun 🎶</p><p>Yil sayin yorqinroq, yil sayin baxtliroq bo‘l 🎶</p><p>Har kunda tabassuming so‘nmasin 🎶</p><p><b>Tug‘ilgan kuning muborak bo‘lsin! 🎉</b></p></div>');
+}
+function playSong(){
+  document.getElementById('song-btn').disabled=true;
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const notes=[392,392,440,392,523.25,493.88,392,392,440,392,587.33,523.25];
+    notes.forEach((f,idx)=>{
+      setTimeout(()=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.type='sine';o.frequency.value=f;
+        g.gain.setValueAtTime(0.0001,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.15,ctx.currentTime+0.05);
+        g.gain.exponentialRampToValueAtTime(0.0001,ctx.currentTime+0.35);
+        o.connect(g);g.connect(ctx.destination);
+        o.start();o.stop(ctx.currentTime+0.4);
+      },idx*280);
+    });
+  }catch(e){}
+  document.querySelectorAll('#song-lyrics p').forEach((p,idx)=>{setTimeout(()=>p.classList.add('show'),700*(idx+1))});
+}
+
+/* ---- Finale ---- */
+function appFinale(){
+  renderWindow('Surprise.exe','🎉','<div style="font-size:60px">🎉</div><h2>Tug‘ilgan kuning<br>muborak bo‘lsin! 🎂❤️</h2><p>Sen bilan har kun bayram. Seni juda-juda yaxshi ko‘raman.</p>');
+  celebrate();
+}
+
+/* ---- Locked folder (secret) ---- */
+function appLocked(){
+  renderWindow('Maxfiy','🔒','<p>Bu papka himoyalangan. Kalitni bilasanmi? 😏</p><input id="lock-pass" type="password" placeholder="Kalit"><div class="err" id="lock-err"></div><button onclick="tryUnlockFolder()">Ochish 🔑</button>');
+}
+function tryUnlockFolder(){
+  const p=document.getElementById('lock-pass').value.trim();
+  if(atob('WVdKaFpHbDU=')===btoa(p)){
+    renderWindow('Maxfiy','🔓','<div style="font-size:56px">❤️‍🔥</div><h2>Sen buni topding 😳</h2><p>Seni abadiy sevaman, hayotim. ❤️♾️</p><p class="small">Bu — hech kim bilmagan, faqat ikkalamizga tegishli kichkina sir edi.</p>');
+    celebrate();
+  } else {
+    document.getElementById('lock-err').textContent='Xavfsizlik ogohlantiruvi: noto‘g‘ri kalit 😏';
+  }
+}
+
+/* ---- Effects ---- */
+function burst(){for(let i=0;i<26;i++){let e=document.createElement('div');e.className='fall';e.textContent=['🎉','🎊','✨','🎈'][Math.floor(Math.random()*4)];e.style.left=Math.random()*100+'vw';e.style.animationDuration=(3+Math.random()*3)+'s';e.style.animationDelay=Math.random()*1+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),7000)}}
+function celebrate(){
+  for(let i=0;i<40;i++){let e=document.createElement('div');e.className='fall';e.textContent=['🎉','🎊','✨','🎈','🎂'][Math.floor(Math.random()*5)];e.style.left=Math.random()*100+'vw';e.style.animationDuration=(3+Math.random()*4)+'s';e.style.animationDelay=Math.random()*2+'s';document.body.appendChild(e);setTimeout(()=>e.remove(),8000)}
+  for(let i=0;i<10;i++){let b=document.createElement('div');b.className='balloon';b.textContent='🎈';b.style.left=Math.random()*100+'vw';b.style.animationDuration=(5+Math.random()*4)+'s';b.style.animationDelay=Math.random()*2+'s';document.body.appendChild(b);setTimeout(()=>b.remove(),10000)}
+}
+(function ambient(){
+  const box=document.getElementById('ambient'),icons=['✨','🎈'];
+  for(let i=0;i<8;i++){
+    const s=document.createElement('span');
+    s.textContent=icons[Math.floor(Math.random()*icons.length)];
+    s.style.left=Math.random()*100+'vw';
+    s.style.animationDuration=(12+Math.random()*10)+'s';
+    s.style.animationDelay=(Math.random()*10)+'s';
+    box.appendChild(s);
+  }
+})();
+</script>
+</body>
+</html>
